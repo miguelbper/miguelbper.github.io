@@ -4,3 +4,5 @@
 
 layout: home
 ---
+
+Math PhD, also interested in computer science and related topics.

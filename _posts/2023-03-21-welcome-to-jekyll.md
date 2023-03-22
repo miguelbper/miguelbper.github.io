@@ -41,11 +41,11 @@ $$
 A computation:
 
 $$
-\begin{align}
+\begin{align*}
   c_L(X_\Omega)
   &\leq \inf_k \frac{\tilde{\mathfrak{g}}_k(X_\Omega)}{k} \\
   &\leq \inf_k \frac{\mathfrak{g}_k(X_\Omega)}{k} \\
   &=    \inf_k \frac{c_k(X_\Omega)}{k} \\
   &\leq \delta_\Omega.
-\end{align}
+\end{align*}
 $$

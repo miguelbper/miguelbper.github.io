@@ -59,3 +59,7 @@ header_pages:
   - about.md
   - math.md
   - blog.md
+
+markdown: kramdown
+kramdown:
+  math_engine: mathjax

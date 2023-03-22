@@ -28,7 +28,7 @@ Check out the [Jekyll docs][jekyll-docs] for more info on how to get the most ou
 [jekyll-gh]:   https://github.com/jekyll/jekyll
 [jekyll-talk]: https://talk.jekyllrb.com/
 
-Inline equation: $c_L(X_\Omega) = \delta_\Omega$.
+Inline equation: $$c_L(X_\Omega) = \delta_\Omega$$.
 
 Another inline equation: $$e^{i x} = \cos x + i \sin x$$.
 
@@ -36,4 +36,16 @@ Display style equation:
 
 $$
   a^2 + b^2 = c^2.
+$$
+
+A computation:
+
+$$
+\begin{align}
+  c_L(X_\Omega)
+  &\leq \inf_k \frac{\tilde{\mathfrak{g}}_k(X_\Omega)}{k} \\
+  &\leq \inf_k \frac{\mathfrak{g}_k(X_\Omega)}{k} \\
+  &=    \inf_k \frac{c_k(X_\Omega)}{k} \\
+  &\leq \delta_\Omega.
+\end{align}
 $$

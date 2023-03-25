@@ -28,14 +28,14 @@ Question: in the completed grid, what is the product of the areas of the connect
 # Strategy: use a backtracking algorithm
 
 Backtracking roughly works as follows. We maintain a stack of partial candidate solutions to our problem (a partial candidate is just a partially filled board). At every iteration, we examine a partial candidate and check if at this point, the constraints are still satisfied. 
-- If the constraints are not satisfied, we abandon this candidate and proceed to the next iteration, where we examine other candidates.
-- If the constraints are satisfied, we fill a cell with the possible values that could be in that cell, and add all these partial candidates to the stack.
+- If the constraints are not satisfied, we abandon this candidate and proceed to the next iteration, where we examine a new candidate.
+- If the constraints are satisfied, we fill a cell with the possible values that could be in that cell, and add all the partial candidates obtained in this way to the stack.
 
 At every iteration, we should also check if the board is completely filled.
 
-An algorithm like this will obviously be significantly better than brute-force search, but can still be improved. For example, suppose that cells $(0, 0)$, $(0,1)$ and $(1, 0)$ have been filled with positive numbers. We know that by the $2\times 2$ constraint, cell $(1,1)$ must be $0$. But the algorithm above is not able to conclude that immediately, it would really need to expand the current grid with all the possible values for cell $(1,1)$, and reject each grid individually to conclude that $0$ is the only possible number. 
+An algorithm like this will obviously be significantly better than brute-force search, but we can still improve on this. For example, suppose that cells $(0, 0)$, $(0,1)$ and $(1, 0)$ have been filled with positive numbers. We know that by the $2 \times 2$ constraint, cell $(1,1)$ must be $0$. But the algorithm above is not able to conclude that immediately: it would need to expand the current grid with all the possible values for cell $(1,1)$, and reject each grid individually to conclude that $0$ is the only number that can be in cell $(1, 1)$. 
 
-Taking this into account, we can improve the algorithm as follows. In the grid, instead of storing the numbers themselves, store at every cell a bitmask representing the list of numbers that possibly could be in that cell. For example, if a cell contains the number $(154)_{10} = (10011010)_2$, this means that the numbers that could be in that cell are $\\{7,4,3,1\\}$. We can implement a function `prune` which uses the constraints of the problem to rule out some possible choices in each cell.
+Taking this into account, we can improve the algorithm as follows. Denote by `xm` the matrix (list of lists) representing the current board, where we set `xm[i][j] = -1` if cell $(i, j)$ is currently not known. We will consider a matrix `cm`, where `cm[i][j]` is a bitmask representing the list of numbers that possibly could be in `xm[i][j]`. For example, if `cm[i][j]` contains the value $(154)_{10} = (10011010)_2$, this means that the numbers that could be in `xm[i][j]` are $\\{7,4,3,1\\}$. We can implement a function `prune` which uses the constraints of the problem to rule out some possible choices in each cell.
 
 We will write a Python implementation of this program. Since we will be dealing with bit computations, the following quantities will be helpful.
 
@@ -46,17 +46,14 @@ for n in range(1, 1 << 8):
     count[n] = 1 + count[n & (n - 1)]
 {% endhighlight %}
 
-`value` is an array where `value[n]` is the location of the first 1 in binary representation of n:
+`value` is an array where `value[n]` is the location of the first $1$ in the binary representation of $n$:
 {% highlight python %}
 value = [-1 for _ in range(1 << 8)]
-for n in range(1 << 8):
-    for i in range(8):
-        if n & (1 << i):
-            value[n] = i
-            break
+for n in range(1, 1 << 8):
+    value[n] = next(v for v in range(8) if n & (1 << v))
 {% endhighlight %}
 
-We define types `Board = list[list[int]]` (a grid where each cell contains the actual number that should be in that cell) and `Choices = list[list[int]]` (a grid where each cell contains a bitmask). We can define functions that convert between the two types.
+We define types `Board = list[list[int]]` (so that `xm` is of type `Board`) and `Choices = list[list[int]]` (so that `cm` is of type `Choices`). We can define functions that convert between the two types.
 
 {% highlight python %}
 def board(cm: Choices) -> Board:
@@ -89,14 +86,14 @@ def solution(xm: Board) -> Optional[Board]:
 {% endhighlight %}
 
 Here, we are using some functions which we will have to implement.
-- `reject(cm: Choices) -> bool` returns `True` when we know that a candidate is no longer worth pursuing.
+- `reject(cm: Choices) -> bool` returns `True` when we know that a partial candidate is no longer worth pursuing (because some of the constraints are not being satisfied).
 - `accept(cm: Choices) -> bool` returns `True` when the board is completely filled.
-- `expand(cm: Choices) -> list[Choices]` chooses a cell with the lowest number of possibilities and returns a list of copies of `cm`, but with the chosen cell replaced by each possible value.
+- `expand(cm: Choices) -> list[Choices]` chooses a cell with the lowest number of choices and returns a list of copies of `cm`, but with the chosen cell replaced by each possible value.
 - `prune(cm: Choices) -> Choices` uses the constraints of the problem to rule out possibilities in each cell.
 
 Of these, only the `prune` function has a lengthy implementation, so we leave that one for the next section.
 
-We should `reject` a candidate if there is a cell such that no number in $\\{0,\ldots,7\\}$ could be in that cell or if the current board cannot be filled in such a way that we obtain a connected board. Notice that the constraints will be enforced in the `prune` function, which will be implemented such that if a constraint is not met, then some cell will have zero choices of numbers (in this case, we say that the cell is blocked).
+We should `reject` a candidate if there is a cell such that no number in $\\{0,\ldots,7\\}$ could be in that cell or if the current board cannot be filled in such a way that we obtain a connected board. Notice that the constraints will be enforced in the `prune` function, which will be implemented such that if a constraint is not met, then some cell will have zero choices available (in this case, we say that the cell is blocked).
 
 {% highlight python %}
 def reject(cm: Choices) -> bool:
@@ -115,7 +112,7 @@ def connected(cm: Choices) -> bool:
     return num_components <= 1
 {% endhighlight %}
 
-We `accept` a candidate if the board is completely filled. Notice that since the candidate was never rejected, we know that every constraint is satisfied.
+We `accept` a candidate if the board is completely filled. Notice that if `accept` is called in the `solution` function, since the candidate was never rejected, we know that every constraint is satisfied.
 
 {% highlight python %}
 def accept(cm: Choices) -> bool:
@@ -184,21 +181,22 @@ At every step, we update the matrix `ans`. Here is how each pruning step can be 
 
 Every $2 \times 2$ square should have at least one $0$:
 {% highlight python %}
-for i, j, corner in product(range(11), range(11), range(4)):
-    x = i + ((corner + 1) % 4 > 1)
-    y = j + (corner > 1)
+for i, j in product(range(11), repeat=2):
+    for corner in range(4):
+        a = i + ((corner + 1) % 4 > 1)
+        b = j + (corner > 1)
 
-    # if all cells except (x, y) do not have a 0, 
-    # then cell (x, y) can't be > 0.
-    remove = True
-    for other_corner in range(4):
-        if other_corner != corner:
-            x_ = i + ((other_corner + 1) % 4 > 1)
-            y_ = j + (other_corner > 1)
-            remove &= not (ans[x_][y_] & 1)
+        # if all cells except (a, b) do not have a 0, 
+        # then cell (a, b) can't be > 0.
+        remove = True
+        for corner_ in range(4):
+            if corner_ != corner:
+                a_ = i + ((corner_ + 1) % 4 > 1)
+                b_ = j + (corner_ > 1)
+                remove &= not (ans[a_][b_] & 1)
 
-    if remove:
-        ans[x][y] &= 1
+        if remove:
+            ans[a][b] &= 1
 {% endhighlight %}
 
 Each subgrid has one $1$, ..., seven $7$'s:
@@ -238,12 +236,12 @@ for grid in range(4):
     for arr in arrs:
         cms = [ans[i][j] for (i, j) in arr]
         
-        nk0 = sum(value[c] == 0 for c in cms if count[c] == 1)
-        nk1 = sum(value[c] >= 1 for c in cms if count[c] == 1)
-        n = 4 - nk1
+        num_zeros = sum(value[c] == 0 for c in cms if count[c] == 1)
+        num_posit = sum(value[c] >= 1 for c in cms if count[c] == 1)
+        n = 4 - num_posit
         s = 20 - sum(value[c] for c in cms if count[c] == 1)
 
-        if not (nk0 <= 3 and nk1 <= 4) or (n == 0 and s != 0):
+        if not (num_zeros <= 3 and num_posit <= 4) or (n == 0 and s != 0):
             return [[0 for _ in range(12)] for _ in range(12)]
         
         # loop over unknown cells

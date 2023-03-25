@@ -18,9 +18,9 @@ Grade: Summa Cum Laude
 
 # Teaching
 I was a tutor for the following courses at the University of Augsburg:
-- 2020-2021 (Winter). Riemannian geometry ([exercise sheets](https://miguelbper.github.io/assets/exercises/2018_19_holomorphic_curves.pdf))
+- 2020-2021 (Winter). Riemannian geometry ([exercise sheets](https://miguelbper.github.io/assets/exercises/2020_21_riemannian_geometry.pdf))
 - 2019-2020 (Summer). Topology ([exercise sheets](https://miguelbper.github.io/assets/exercises/2019_20_topology.pdf))
-- 2018-2019 (Summer). Holomorphic curves ([exercise sheets](https://miguelbper.github.io/assets/exercises/2020_21_riemannian_geometry.pdf))
+- 2018-2019 (Summer). Holomorphic curves ([exercise sheets](https://miguelbper.github.io/assets/exercises/2018_19_holomorphic_curves.pdf))
 - 2017-2018 (Summer). Topology
 
 # Talks

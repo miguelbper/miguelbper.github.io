@@ -15,11 +15,11 @@ Consider the following $12 \times 12$ grid, with four $7 \times 7$ subgrids:
 
 ![]({{ page.image0 | relative_url }})
 
-Fill every cell of the grid with a number in $\\{0,\ldots,7\\}$, such that the following constraints are satisfied:
+We want to fill each cell of the grid with a number in $\\{0,\ldots,7\\}$, such that the following constraints are satisfied:
 - Each $7 \times 7$ subgrid has one $1$, two $2$'s, ..., seven $7$'s.
 - Each row/column in every $7 \times 7$ subgrid contains exactly four nonzero numbers. The sum of every such row/column is $20$.
 - Every $2 \times 2$ square in the grid must have at least one cell with a $0$.
-- If a row/column in the $12 \times 12$ grid has a blue number, then either that number is the sum of the row/column, or the blue number is the first nonzero value seen in that row/column.
+- If a row/column in the $12 \times 12$ grid is marked with a blue number, then either that number is the sum of the row/column, or the blue number is the first nonzero value seen in that row/column.
 - The numbered cells form a connected region.
 
 Question: in the completed grid, what is the product of the areas of the connected groups of squares with a $0$?
@@ -29,11 +29,11 @@ Question: in the completed grid, what is the product of the areas of the connect
 
 Backtracking roughly works as follows. We maintain a stack of partial candidate solutions to our problem (a partial candidate is just a partially filled board). At every iteration, we examine a partial candidate and check if at this point, the constraints are still satisfied. 
 - If the constraints are not satisfied, we abandon this candidate and proceed to the next iteration, where we examine a new candidate.
-- If the constraints are satisfied, we fill a cell with the possible values that could be in that cell, and add all the partial candidates obtained in this way to the stack.
+- If the constraints are satisfied, we fill an empty cell with the possible values that could be in that cell, and add all the partial candidates obtained in this way to the stack.
 
 At every iteration, we should also check if the board is completely filled.
 
-An algorithm like this will obviously be significantly better than brute-force search, but we can still improve on this. For example, suppose that cells $(0, 0)$, $(0,1)$ and $(1, 0)$ have been filled with positive numbers. We know that by the $2 \times 2$ constraint, cell $(1,1)$ must be $0$. But the algorithm above is not able to conclude that immediately: it would need to expand the current grid with all the possible values for cell $(1,1)$, and reject each grid individually to conclude that $0$ is the only number that can be in cell $(1, 1)$. 
+An algorithm like this will obviously be significantly faster than brute-force search, but we can still improve on this. For example, suppose that cells $(0, 0)$, $(0,1)$ and $(1, 0)$ have been filled with positive numbers. We know that by the $2 \times 2$ constraint, cell $(1,1)$ must be $0$. But the algorithm above is not able to conclude that immediately: it would need to expand the current grid with all the possible values for cell $(1,1)$, and reject each invalid grid individually to conclude that $0$ is the only number that can be in cell $(1, 1)$. 
 
 Taking this into account, we can improve the algorithm as follows. Denote by `xm` the matrix (list of lists) representing the current board, where we set `xm[i][j] = -1` if cell $(i, j)$ is currently not known. We will consider a matrix `cm`, where `cm[i][j]` is a bitmask representing the list of numbers that possibly could be in `xm[i][j]`. For example, if `cm[i][j]` contains the value $(154)_{10} = (10011010)_2$, this means that the numbers that could be in `xm[i][j]` are $\\{7,4,3,1\\}$. We can implement a function `prune` which uses the constraints of the problem to rule out some possible choices in each cell.
 
@@ -93,7 +93,7 @@ Here, we are using some functions which we will have to implement.
 
 Of these, only the `prune` function has a lengthy implementation, so we leave that one for the next section.
 
-We should `reject` a candidate if there is a cell such that no number in $\\{0,\ldots,7\\}$ could be in that cell or if the current board cannot be filled in such a way that we obtain a connected board. Notice that the constraints will be enforced in the `prune` function, which will be implemented such that if a constraint is not met, then some cell will have zero choices available (in this case, we say that the cell is blocked).
+We should `reject` a candidate if there is a cell such that no number in $\\{0,\ldots,7\\}$ could be in that cell or if the current board cannot be filled in such a way that we obtain a connected board. Notice that every constraint (except connectedness) will be enforced in the `prune` function, which will be implemented such that if a constraint is not met, then some cell will have zero choices available (in this case, we say that the cell is blocked).
 
 {% highlight python %}
 def reject(cm: Choices) -> bool:
@@ -112,7 +112,7 @@ def connected(cm: Choices) -> bool:
     return num_components <= 1
 {% endhighlight %}
 
-We `accept` a candidate if the board is completely filled. Notice that if `accept` is called in the `solution` function, since the candidate was never rejected, we know that every constraint is satisfied.
+We `accept` a candidate if the board is completely filled. Notice that if `accept` is called in the `solution` function, since the candidate was not rejected, we know that every constraint is satisfied.
 
 {% highlight python %}
 def accept(cm: Choices) -> bool:
@@ -296,7 +296,7 @@ for side, a in product(range(4), range(12)):
 {% endhighlight %}
 
 # Solution
-With all of that written, we compute the solution to the problem with the following line of code:
+We now have the `solution` function fully implemented. We compute the solution to the problem with the following line of code:
 
 {% highlight python %}
 sol = solution(matrix)

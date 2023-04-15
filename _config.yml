@@ -23,7 +23,7 @@ title: Miguel Pereira
 description: >- # this means to ignore newlines until "baseurl:"
   My works on math, programming, and related fields.
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "" # the base hostname & protocol for your site, e.g. http://example.com
+url: "https://miguelbper.github.io/" # the base hostname & protocol for your site, e.g. http://example.com
 # twitter_username: jekyllrb
 github_username:  miguelbper
 linkedin_username: miguelbpereira
@@ -32,6 +32,7 @@ linkedin_username: miguelbpereira
 theme: minima
 plugins:
   - jekyll-feed
+  - jekyll-sitemap
 
 # Exclude from processing.
 # The following items will not be processed, by default.

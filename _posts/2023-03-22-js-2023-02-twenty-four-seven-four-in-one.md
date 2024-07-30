@@ -6,7 +6,7 @@ image0: /assets/images/js-2023-02-given.png
 image1: /assets/images/js-2023-02-sol.png
 ---
 
-In this post, we will implement a backtracking algorithm to solve the Jane Street puzzle of [February 2023](https://www.janestreet.com/puzzles/twenty-four-seven-four-in-one-index/). You can find the script containing all the code in this post in my [GitHub](https://github.com/miguelbper/jane-street-puzzles/blob/main/2023-02-twenty-four-seven-four-in-one.py).
+In this post, we will implement a backtracking algorithm to solve the Jane Street puzzle of [February 2023](https://www.janestreet.com/puzzles/twenty-four-seven-four-in-one-index/). You can find the script containing all the code in this post in my [GitHub](https://github.com/miguelbper/jane-street-puzzles/blob/c3865392071e6ac9907515ee8f17a1043299ac4f/2023-02-twenty-four-seven-four-in-one.py).
 
 
 # Statement of the problem
@@ -27,13 +27,13 @@ Question: in the completed grid, what is the product of the areas of the connect
 
 # Strategy: use a backtracking algorithm
 
-Backtracking roughly works as follows. We maintain a stack of partial candidate solutions to our problem (a partial candidate is just a partially filled board). At every iteration, we examine a partial candidate and check if at this point, the constraints are still satisfied. 
+Backtracking roughly works as follows. We maintain a stack of partial candidate solutions to our problem (a partial candidate is just a partially filled board). At every iteration, we examine a partial candidate and check if at this point, the constraints are still satisfied.
 - If the constraints are not satisfied, we abandon this candidate and proceed to the next iteration, where we examine a new candidate.
 - If the constraints are satisfied, we fill an empty cell with the possible values that could be in that cell, and add all the partial candidates obtained in this way to the stack.
 
 At every iteration, we should also check if the board is completely filled.
 
-An algorithm like this will obviously be significantly faster than brute-force search, but we can still improve on this. For example, suppose that cells $(0, 0)$, $(0,1)$ and $(1, 0)$ have been filled with positive numbers. We know that by the $2 \times 2$ constraint, cell $(1,1)$ must be $0$. But the algorithm above is not able to conclude that immediately: it would need to expand the current grid with all the possible values for cell $(1,1)$, and reject each invalid grid individually to conclude that $0$ is the only number that can be in cell $(1, 1)$. 
+An algorithm like this will obviously be significantly faster than brute-force search, but we can still improve on this. For example, suppose that cells $(0, 0)$, $(0,1)$ and $(1, 0)$ have been filled with positive numbers. We know that by the $2 \times 2$ constraint, cell $(1,1)$ must be $0$. But the algorithm above is not able to conclude that immediately: it would need to expand the current grid with all the possible values for cell $(1,1)$, and reject each invalid grid individually to conclude that $0$ is the only number that can be in cell $(1, 1)$.
 
 Taking this into account, we can improve the algorithm as follows. Denote by `xm` the matrix (list of lists) representing the current board, where we set `xm[i][j] = -1` if cell $(i, j)$ is currently not known. We will consider a matrix `cm`, where `cm[i][j]` is a bitmask representing the list of numbers that possibly could be in `xm[i][j]`. For example, if `cm[i][j]` contains the value $(154)_{10} = (10011010)_2$, this means that the numbers that could be in `xm[i][j]` are $\\{7,4,3,1\\}$. We can implement a function `prune` which uses the constraints of the problem to rule out some possible choices in each cell.
 
@@ -105,7 +105,7 @@ def blocked(cm: Choices) -> bool:
     return any(cm[i][j] == 0 for i, j in product(range(12), repeat=2))
 
 def connected(cm: Choices) -> bool:
-    ''' True iff there is a chance the partially filled board will lead 
+    ''' True iff there is a chance the partially filled board will lead
     to a connected board. '''
     mat = [[int(cm[i][j] != 1) for j in range(12)] for i in range(12)]
     _, num_components = label(mat) # from scipy.ndimage import label
@@ -136,7 +136,7 @@ def expand(cm: Choices) -> list[Choices]:
             m = count[cm[a][b]]
         if m == 2:
             break
-    
+
     # return list of copies of cm, but replacing cm[a][b] by each value
     ans = []
     for x in range(8):
@@ -186,7 +186,7 @@ for i, j in product(range(11), repeat=2):
         a = i + ((corner + 1) % 4 > 1)
         b = j + (corner > 1)
 
-        # if all cells except (a, b) do not have a 0, 
+        # if all cells except (a, b) do not have a 0,
         # then cell (a, b) can't be > 0.
         remove = True
         for corner_ in range(4):
@@ -235,7 +235,7 @@ for grid in range(4):
 
     for arr in arrs:
         cms = [ans[i][j] for (i, j) in arr]
-        
+
         num_zeros = sum(value[c] == 0 for c in cms if count[c] == 1)
         num_posit = sum(value[c] >= 1 for c in cms if count[c] == 1)
         n = 4 - num_posit
@@ -243,7 +243,7 @@ for grid in range(4):
 
         if not (num_zeros <= 3 and num_posit <= 4) or (n == 0 and s != 0):
             return [[0 for _ in range(12)] for _ in range(12)]
-        
+
         # loop over unknown cells
         for (i, j), c in zip(arr, cms):
             if count[c] > 1:
@@ -262,14 +262,14 @@ arrs = rows + cols
 for bluenum, arr in arrs:
     if bluenum <= 7:
         continue
-        
+
     cms = [ans[i][j] for (i, j) in arr]
     n = sum(count[c] != 1 for c in cms)
     s = 40 - bluenum - sum(value[c] for c in cms if count[c] == 1)
 
     if n == 0 and s != 0:
         return [[0 for _ in range(12)] for _ in range(12)]
-    
+
     # loop over unknown cells
     for (i, j), c in zip(arr, cms):
         if count[c] > 1:
